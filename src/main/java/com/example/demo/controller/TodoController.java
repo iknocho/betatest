@@ -6,8 +6,10 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -82,6 +84,60 @@ public class TodoController {
 		return ResponseEntity.ok().body(response);
 		
 	}
+	
+	@PutMapping
+	public ResponseEntity<?> updateTodo(@RequestBody TodoDTO dto){
+		String temporaryUserId="temporary-user";//temporary user id
+		
+		//1.dto를 entity로 변환
+		TodoEntity entity=TodoDTO.toEntity(dto); //TodoDTO인 이유(dto메서드가 아니라): toEntity가 static함수이므로 
+		
+		//2.userid를 temporaryUserId로 초기화 인증부분에서 수정필요
+		entity.setUserId(temporaryUserId);
+		
+		//3.서비스를 이용해 entity 업데이트
+		List<TodoEntity> entities=service.update(entity);
+		
+		//4.자바스트림을 이용해 리턴된 엔티티리스트를 TodoDTO리스트로 변환
+		List<TodoDTO> dtos= entities.stream().map(TodoDTO::new).collect(Collectors.toList());
+		
+		//5.변환된 TodoDTO리스트를 RespondDTO에 초기화
+		ResponseDTO<TodoDTO> response=ResponseDTO.<TodoDTO>builder().data(dtos).build();
+	
+		//6.ResponseEntity에 RespondDTO를 넣어 리턴
+		return ResponseEntity.ok().body(response);
+	}
+	
+	@DeleteMapping
+	public ResponseEntity<?> deleteTodo(@RequestBody TodoDTO dto){
+		try {
+			String temporaryUserId="temporary-user";//temporary user id
+			
+			//1.TodoEntity로 변환한다.
+			TodoEntity entity=TodoDTO.toEntity(dto);
+			
+			//2.userId를 entity에 설정
+			entity.setUserId(temporaryUserId);
+			
+			//3.서비스를 이용해 entity삭제
+			List<TodoEntity> entities=service.delete(entity);
+			
+			//4.자바스트림 이용해 리턴된 엔티티리스트를 TodoDTO로 변환
+			List<TodoDTO> dtos=entities.stream().map(TodoDTO::new).collect(Collectors.toList());
+			
+			//5.변환된 TodoDTO리스트를 RespondDTO로 초기화
+			ResponseDTO<TodoDTO> response=ResponseDTO.<TodoDTO>builder().data(dtos).build();
+			
+			//6.ResponseEntity에 RespondDTO리턴
+			return ResponseEntity.ok().body(response);
+		}catch(Exception e) {
+			//7.예외가 있는 경우 dto대신 error메시지에 넣어 리턴
+			String error=e.getMessage();
+			ResponseDTO<TodoDTO> response=ResponseDTO.<TodoDTO>builder().error(error).build();
+			return ResponseEntity.badRequest().body(response);
+		}
+	}
+	
 	
 	
 }
