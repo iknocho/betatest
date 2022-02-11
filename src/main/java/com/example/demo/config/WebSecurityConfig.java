@@ -29,10 +29,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 //*******인증해야하는API설정
-                .authorizeRequests()//   /와 /auth/**경로는 인증안해도 된다
-                    .antMatchers("/","/auth/**").permitAll()
+                .authorizeRequests()//   /와 /auth/**경로는 인증안해도 된다.
+                // 인증받지 않은 유저에게 error response를 보내기 위해 추가
+                    .antMatchers("/","/auth/**","/error").permitAll()
                 .anyRequest() //    /와 /auth/**이외의 모든 경로는 인증해야됨
                     .authenticated();
+
                 //filter등록
                 //매 요청마다
                 //CorsFilter실행한 후에
