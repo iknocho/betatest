@@ -36,6 +36,7 @@ dependencies {
             'io.jsonwebtoken:jjwt-jackson:0.11.2' // or 'io.jsonwebtoken:jjwt-gson:0.11.2' for gson
 	// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-security
 	implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '2.6.2'
+	runtimeOnly 'mysql:mysql-connector-java'
 }
 
 test {
